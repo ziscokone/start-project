@@ -1,0 +1,123 @@
+{% extends "layouts/page.html" %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block content %}
+<div class="entete-page entete-page-ligne">
+    <div>
+        <h1 class="entete-page-titre">Mon profil</h1>
+        <p class="entete-page-sous-titre">Gérez vos informations personnelles et la sécurité de votre compte.</p>
+    </div>
+    <a href="{% url 'hub' %}" class="lien-retour"><i class="bi bi-arrow-left"></i> Retour à l'accueil</a>
+</div>
+
+<div class="row g-4 align-items-stretch">
+    {# ── Carte d'identité ─────────────────────────────────────────── #}
+    <div class="col-lg-4">
+        <section class="carte profil-carte h-100">
+            <div class="profil-bandeau"></div>
+            <div class="profil-identite" id="photo-apercu">
+                {% include "includes/_avatar.html" with personne=user taille="lg" %}
+                <h2 class="profil-nom">{{ user.nom_affiche }}</h2>
+                <div class="profil-poste">{% if user.poste %}{{ user.poste }}{% else %}@{{ user.username }}{% endif %}</div>
+                <span class="pastille {% if user.est_super_admin %}pastille-orange{% elif user.est_admin %}pastille-marine{% endif %}">{{ user.get_role_display }}</span>
+            </div>
+
+            <ul class="profil-infos">
+                <li><i class="bi bi-person-badge"></i><span>Identifiant</span><strong>{{ user.username }}</strong></li>
+                <li><i class="bi bi-calendar3"></i><span>Membre depuis</span><strong>{{ user.date_joined|date:"j M Y" }}</strong></li>
+                <li><i class="bi bi-clock-history"></i><span>Dernière connexion</span><strong>{{ user.last_login|date:"j M Y, H:i"|default:"—" }}</strong></li>
+                <li><i class="bi bi-grid"></i><span>Modules</span><strong>{{ modules_accessibles|length }}</strong></li>
+            </ul>
+
+            <a href="{% url 'compte:mot_de_passe' %}" class="profil-action">
+                <span class="icone-boite icone-boite-orange"><i class="bi bi-shield-lock"></i></span>
+                <span class="flex-grow-1 fw-semibold">Changer mon mot de passe</span>
+                <i class="bi bi-chevron-right text-muted"></i>
+            </a>
+        </section>
+    </div>
+
+    {# ── Formulaire ───────────────────────────────────────────────── #}
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" novalidate class="carte form-pro h-100 d-flex flex-column">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <div class="form-section-entete">
+                    <span class="icone-boite icone-boite-marine"><i class="bi bi-person"></i></span>
+                    <div>
+                        <h3 class="form-section-titre">Identité</h3>
+                        <p class="form-section-texte">Votre nom tel qu'il apparaît dans l'application.</p>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">{% include "includes/_champ.html" with champ=form.first_name icone="bi-person" %}</div>
+                    <div class="col-md-6">{% include "includes/_champ.html" with champ=form.last_name icone="bi-person" %}</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-entete">
+                    <span class="icone-boite icone-boite-marine"><i class="bi bi-envelope"></i></span>
+                    <div>
+                        <h3 class="form-section-titre">Coordonnées</h3>
+                        <p class="form-section-texte">Visibles par les administrateurs.</p>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">{% include "includes/_champ.html" with champ=form.email icone="bi-envelope" %}</div>
+                    <div class="col-md-6">{% include "includes/_champ.html" with champ=form.telephone icone="bi-telephone" %}</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="photo-ligne">
+                    <div class="form-section-entete mb-0">
+                        <span class="icone-boite icone-boite-marine"><i class="bi bi-image"></i></span>
+                        <div>
+                            <h3 class="form-section-titre">Photo de profil</h3>
+                            <p class="form-section-texte" id="photo-fichier">JPG ou PNG, 2 Mo maximum.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        {% if user.photo %}
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" name="retirer_photo" id="retirer_photo">
+                            <label class="form-check-label small" for="retirer_photo">Retirer la photo</label>
+                        </div>
+                        {% endif %}
+                        <label for="{{ form.photo.id_for_label }}" class="btn btn-accent btn-sm mb-0 fw-bold">
+                            <i class="bi bi-upload me-1"></i> Importer une image
+                        </label>
+                        <input type="file" name="photo" id="{{ form.photo.id_for_label }}" accept="image/*" class="d-none">
+                    </div>
+                </div>
+                {% for e in form.photo.errors %}<div class="invalid-feedback d-block mt-2">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="carte-pied d-flex justify-content-end gap-2 mt-auto">
+                <a href="{% url 'compte:profil' %}" class="btn btn-light-border">Annuler</a>
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Aperçu immédiat de la photo choisie, dans la carte de gauche
+document.getElementById('{{ form.photo.id_for_label }}').addEventListener('change', function () {
+    const fichier = this.files[0];
+    document.getElementById('photo-fichier').textContent = fichier ? fichier.name + ' (aperçu à gauche, pensez à enregistrer)' : 'JPG ou PNG, 2 Mo maximum.';
+    if (fichier && fichier.type.startsWith('image/')) {
+        const avatar = document.querySelector('#photo-apercu .avatar');
+        avatar.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(fichier);
+        avatar.appendChild(img);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% comment %}
+    Gabarit des pages hors module : hub, profil, mot de passe.
+    Fond marine et décor du Hub sur toutes ces pages, contenu centré.
+{% endcomment %}
+
+{% block body_class %}page-hub hub-marine page-douce{% endblock %}
+
+{% block body %}
+{% block decor %}<div class="deco" aria-hidden="true">{% include "includes/_decor.html" %}</div>{% endblock %}
+<header class="hub-topbar">
+    <div class="container d-flex justify-content-between align-items-center gap-3">
+        <a href="{% url 'hub' %}" class="hub-marque">
+            {% if etablissement.logo %}
+                <img src="{{ etablissement.logo.url }}" alt="Logo">
+            {% else %}
+                <span class="hub-marque-initiales">{{ etablissement.initiales }}</span>
+            {% endif %}
+            <span>
+                <span class="hub-marque-nom d-block">{{ etablissement.nom }}</span>
+                {% if etablissement.slogan %}<span class="hub-marque-slogan d-block">{{ etablissement.slogan }}</span>{% endif %}
+            </span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <div class="d-flex align-items-center gap-3">
+            <div class="hub-horloge">
+                <div class="hub-horloge-date" id="horloge-date"></div>
+                <div class="hub-horloge-heure" id="horloge-heure"></div>
+            </div>
+            <div class="dropdown">
+                <button class="hub-utilisateur border-0" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% include "includes/_avatar.html" with personne=user %}
+                    <span class="hub-utilisateur-texte">
+                        <span class="hub-utilisateur-nom">{{ user.nom_affiche }}</span>
+                        <span class="hub-utilisateur-role">{{ user.get_role_display }}</span>
+                    </span>
+                    <i class="bi bi-chevron-down small opacity-75"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" style="min-width:260px">
+                    {% include "includes/_menu_utilisateur.html" %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+{% block main %}
+<main class="page-contenu">
+    {% include "includes/_messages.html" %}
+    {% block content %}{% endblock %}
+</main>
+{% endblock %}
+
+<footer class="page-pied">
+    © {% now "Y" %} {{ etablissement.nom }}
+</footer>
+{% endblock %}

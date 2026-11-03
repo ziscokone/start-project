@@ -1,0 +1,32 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}Comptes bloqués{% endblock %}
+{% block page_titre %}Comptes bloqués{% endblock %}
+{% block page_icone %}bi-shield-lock{% endblock %}
+
+{% block content %}
+<section class="carte">
+    <div class="carte-entete">
+        <div>
+            <h3 class="carte-titre">Comptes bloqués</h3>
+            <p class="carte-sous-titre">Après 5 échecs, la connexion est bloquée 1 heure. Vous pouvez la débloquer plus tôt.</p>
+        </div>
+    </div>
+    {% for t in tentatives %}
+    <div class="ligne-action">
+        <span class="icone-boite icone-boite-danger"><i class="bi bi-shield-lock"></i></span>
+        <div class="flex-grow-1">
+            <div class="ligne-action-titre">{{ t.username|default:"(identifiant vide)" }}</div>
+            <div class="ligne-action-texte">{{ t.failures_since_start }} échecs · depuis {{ t.ip_address }} · dernier essai {{ t.attempt_time|date:"d/m/Y H:i" }}</div>
+        </div>
+        <form method="post" class="m-0" data-confirmer="Débloquer « {{ t.username }} » ?">
+            {% csrf_token %}
+            <input type="hidden" name="tentative" value="{{ t.pk }}">
+            <button class="btn btn-light-border btn-sm"><i class="bi bi-unlock me-1"></i> Débloquer</button>
+        </form>
+    </div>
+    {% empty %}
+    <div class="vide"><i class="bi bi-shield-check" style="color:var(--succes)"></i><p>Aucun compte bloqué.</p></div>
+    {% endfor %}
+</section>
+{% endblock %}

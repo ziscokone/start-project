@@ -1,0 +1,58 @@
+{% extends "layouts/module.html" %}
+{% load affichage %}
+
+{% block title %}Journal de connexion{% endblock %}
+{% block page_titre %}Journal de connexion{% endblock %}
+{% block page_icone %}bi-clock-history{% endblock %}
+
+{% block content %}
+<section class="carte">
+    <div class="carte-entete flex-wrap">
+        <div>
+            <h3 class="carte-titre">Journal de connexion</h3>
+            <p class="carte-sous-titre">Qui s'est connecté, quand, et depuis quelle adresse.</p>
+        </div>
+        <form method="get" data-filtre-auto class="barre-filtres">
+            <input type="hidden" name="onglet" value="{{ onglet }}">
+            <div class="champ-icone"><i class="bi bi-search"></i><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Identifiant ou adresse IP" autocomplete="off"></div>
+        </form>
+    </div>
+    <nav class="onglets" data-filtre-zone="onglets">
+        <a href="?onglet=connexions{% if q %}&q={{ q|urlencode }}{% endif %}" class="{% if onglet == 'connexions' %}actif{% endif %}">Connexions réussies</a>
+        <a href="?onglet=echecs{% if q %}&q={{ q|urlencode }}{% endif %}" class="{% if onglet == 'echecs' %}actif{% endif %}">Échecs <span class="sidebar-badge ms-1{% if nb_echecs %} danger{% endif %}">{{ nb_echecs }}</span></a>
+    </nav>
+    <div class="table-responsive" data-filtre-zone="resultats">
+        <table class="table tableau tableau-compact">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Identifiant</th>
+                    <th>Adresse IP</th>
+                    {% if onglet == 'echecs' %}<th>Blocage</th>{% else %}<th>Déconnexion</th>{% endif %}
+                    <th>Navigateur</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ligne in page %}
+                <tr>
+                    <td class="text-nowrap">{{ ligne.attempt_time|date:"d/m/Y H:i:s" }}</td>
+                    <td class="fw-semibold">{{ ligne.username|default:"—" }}</td>
+                    <td>{{ ligne.ip_address|default:"—" }}</td>
+                    {% if onglet == 'echecs' %}
+                    <td>{% if ligne.locked_out %}<span class="pastille pastille-danger">Bloqué</span>{% else %}<span class="texte-secondaire">—</span>{% endif %}</td>
+                    {% else %}
+                    <td>{% if ligne.logout_time %}{{ ligne.logout_time|date:"H:i:s" }}{% else %}<span class="pastille pastille-marine">Non déconnecté</span>{% endif %}</td>
+                    {% endif %}
+                    <td><span class="navigateur" title="{{ ligne.user_agent }}"><i class="bi bi-globe2"></i>{{ ligne.user_agent|navigateur }}</span></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5"><div class="vide"><i class="bi bi-clock-history"></i><p>Aucune entrée.</p></div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div data-filtre-zone="pagination">
+        {% if page.paginator.num_pages > 1 %}<div class="carte-pied">{% include "includes/_pagination.html" %}</div>{% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}Supprimer · {{ cible.nom_affiche }}{% endblock %}
+{% block page_titre %}Supprimer un compte{% endblock %}
+{% block page_icone %}bi-trash{% endblock %}
+
+{% block content %}
+<section class="carte" style="max-width:640px">
+    <div class="carte-corps">
+        <div class="d-flex gap-3">
+            <span class="icone-boite icone-boite-danger"><i class="bi bi-exclamation-triangle"></i></span>
+            <div>
+                <h3 class="carte-titre mb-2">Supprimer le compte de {{ cible.nom_affiche }} ?</h3>
+                <p class="text-muted mb-2">Cette action est définitive. L'historique lié à ce compte pourra perdre son auteur.</p>
+                <p class="text-muted mb-0">Pour simplement empêcher la connexion, préférez <strong>désactiver</strong> le compte.</p>
+            </div>
+        </div>
+    </div>
+    <div class="carte-pied d-flex justify-content-end gap-2">
+        <a href="{% url 'comptes:utilisateur_list' %}" class="btn btn-light-border">Annuler</a>
+        <form method="post" action="{% url 'comptes:utilisateur_toggle' cible.pk %}" class="m-0">
+            {% csrf_token %}
+            {% if cible.is_active %}<button class="btn btn-light-border"><i class="bi bi-pause-circle me-1"></i> Désactiver plutôt</button>{% endif %}
+        </form>
+        <form method="post" class="m-0">
+            {% csrf_token %}
+            <button class="btn btn-danger"><i class="bi bi-trash me-1"></i> Supprimer définitivement</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

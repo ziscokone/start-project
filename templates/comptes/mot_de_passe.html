@@ -1,0 +1,31 @@
+{% extends "layouts/page.html" %}
+
+{% block title %}Changer mon mot de passe{% endblock %}
+
+{% block content %}
+<div class="mx-auto" style="max-width:520px">
+    {% if not user.doit_changer_mot_de_passe %}
+    <div class="entete-page"><a href="{% url 'compte:profil' %}" class="lien-retour"><i class="bi bi-arrow-left"></i> Mon profil</a></div>
+    {% endif %}
+    <form method="post" novalidate class="carte form-pro">
+        {% csrf_token %}
+        <div class="carte-entete">
+            <div class="d-flex align-items-center gap-3">
+                <span class="icone-boite icone-boite-orange"><i class="bi bi-key"></i></span>
+                <div>
+                    <h3 class="carte-titre">Changer mon mot de passe</h3>
+                    <p class="carte-sous-titre">8 caractères minimum, pas uniquement des chiffres.</p>
+                </div>
+            </div>
+        </div>
+        <div class="carte-corps">
+            <div class="mb-3">{% include "includes/_champ.html" with champ=form.old_password icone="bi-lock" %}</div>
+            <div class="mb-3">{% include "includes/_champ.html" with champ=form.new_password1 icone="bi-key" %}</div>
+            <div>{% include "includes/_champ.html" with champ=form.new_password2 icone="bi-key" %}</div>
+        </div>
+        <div class="carte-pied d-flex justify-content-end">
+            <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i> Enregistrer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

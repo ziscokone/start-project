@@ -1,0 +1,121 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}Établissement{% endblock %}
+{% block page_titre %}Paramètres de l'établissement{% endblock %}
+{% block page_icone %}bi-building-gear{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <section class="carte">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Identité</h3>
+                        <p class="carte-sous-titre">Affichée sur la page de connexion, le hub et les documents.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="apercu-image" id="apercu-logo">
+                            {% if form.instance.logo %}<img src="{{ form.instance.logo.url }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <label class="form-label" for="{{ form.logo.id_for_label }}">Logo</label>
+                            <input type="file" name="logo" id="{{ form.logo.id_for_label }}" accept="image/*" data-apercu="#apercu-logo" class="form-control{% if form.logo.errors %} is-invalid{% endif %}">
+                            {% for e in form.logo.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                            <div class="form-text">PNG à fond transparent conseillé, 2 Mo maximum.</div>
+                            {% if form.instance.logo %}
+                            <div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="retirer_logo" id="retirer_logo"><label class="form-check-label small" for="retirer_logo">Retirer le logo</label></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-5">{% include "includes/_champ.html" with champ=form.nom %}</div>
+                        <div class="col-md-2">{% include "includes/_champ.html" with champ=form.sigle %}</div>
+                        <div class="col-md-5">{% include "includes/_champ.html" with champ=form.slogan %}</div>
+                        <div class="col-12">{% include "includes/_champ.html" with champ=form.description %}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="carte">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Coordonnées</h3>
+                        <p class="carte-sous-titre">Pour vos clients et vos documents imprimés.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="row g-2">
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.adresse %}</div>
+                        <div class="col-md-3">{% include "includes/_champ.html" with champ=form.ville %}</div>
+                        <div class="col-md-3">{% include "includes/_champ.html" with champ=form.pays %}</div>
+                        <div class="col-md-4">{% include "includes/_champ.html" with champ=form.boite_postale %}</div>
+                        <div class="col-md-4">{% include "includes/_champ.html" with champ=form.telephone %}</div>
+                        <div class="col-md-4">{% include "includes/_champ.html" with champ=form.telephone_2 %}</div>
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.email %}</div>
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.site_web %}</div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <div class="col-xl-4">
+            <section class="carte">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Documents</h3>
+                        <p class="carte-sous-titre">Réglages des impressions.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="mb-2">{% include "includes/_champ.html" with champ=form.devise %}</div>
+                    {% include "includes/_champ.html" with champ=form.pied_de_page %}
+                </div>
+            </section>
+
+            <section class="carte">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Informations légales</h3>
+                        <p class="carte-sous-titre">Mentions obligatoires sur les factures.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="row g-2">
+                        <div class="col-6">{% include "includes/_champ.html" with champ=form.rccm %}</div>
+                        <div class="col-6">{% include "includes/_champ.html" with champ=form.compte_contribuable %}</div>
+                        <div class="col-6">{% include "includes/_champ.html" with champ=form.regime_fiscal %}</div>
+                        <div class="col-6">{% include "includes/_champ.html" with champ=form.capital %}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="carte">
+                <div class="carte-corps">
+                    <div class="surtitre mb-3">Aperçu</div>
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:var(--marine)">
+                        {% if form.instance.logo %}
+                            <img src="{{ form.instance.logo.url }}" alt="" style="height:40px;width:40px;object-fit:contain;background:#fff;border-radius:8px;padding:2px">
+                        {% else %}
+                            <span class="hub-marque-initiales text-white" style="width:40px;height:40px">{{ etablissement.initiales }}</span>
+                        {% endif %}
+                        <div>
+                            <div class="text-white fw-bold">{{ etablissement.nom }}</div>
+                            {% if etablissement.slogan %}<div class="small" style="color:rgba(255,255,255,.6)">{{ etablissement.slogan }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3">Dernière modification : {{ etablissement.date_modification|date:"d/m/Y H:i" }}</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i> Enregistrer</button>
+    </div>
+</form>
+{% endblock %}

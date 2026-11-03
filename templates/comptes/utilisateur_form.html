@@ -1,0 +1,113 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}{% if creation %}Nouvel utilisateur{% else %}{{ cible.nom_affiche }}{% endif %}{% endblock %}
+{% block page_titre %}{% if creation %}Nouvel utilisateur{% else %}Modifier · {{ cible.nom_affiche }}{% endif %}{% endblock %}
+{% block page_icone %}{% if creation %}bi-person-plus{% else %}bi-person-gear{% endif %}{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger"><i class="bi bi-exclamation-octagon-fill"></i><span>{% for e in form.non_field_errors %}{{ e }} {% endfor %}</span></div>
+    {% endif %}
+
+    <div class="row g-3">
+        <div class="col-xl-7">
+            <section class="carte">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Identité</h3>
+                        <p class="carte-sous-titre">Informations de la personne.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="apercu-image" id="apercu-photo" style="border-radius:50%">
+                            {% if cible.photo %}<img src="{{ cible.photo.url }}" alt="">{% else %}<i class="bi bi-person"></i>{% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <label class="form-label" for="{{ form.photo.id_for_label }}">Photo</label>
+                            <input type="file" name="photo" id="{{ form.photo.id_for_label }}" accept="image/*" data-apercu="#apercu-photo" class="form-control{% if form.photo.errors %} is-invalid{% endif %}">
+                            {% for e in form.photo.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                            <div class="form-text">JPG ou PNG, 2 Mo maximum.</div>
+                            {% if cible.photo %}
+                            <div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="retirer_photo" id="retirer_photo"><label class="form-check-label small" for="retirer_photo">Retirer la photo</label></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.first_name %}</div>
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.last_name %}</div>
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.email %}</div>
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.telephone %}</div>
+                        <div class="col-md-12">{% include "includes/_champ.html" with champ=form.poste %}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="carte">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Connexion</h3>
+                        <p class="carte-sous-titre">Ce que la personne saisit pour se connecter.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="row g-2">
+                        <div class="col-md-12">{% include "includes/_champ.html" with champ=form.username %}</div>
+                        {% if creation %}
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.password1 %}</div>
+                        <div class="col-md-6">{% include "includes/_champ.html" with champ=form.password2 %}</div>
+                        <div class="col-12">{% include "includes/_champ.html" with champ=form.doit_changer %}</div>
+                        {% else %}
+                        <div class="col-12">
+                            <a href="{% url 'comptes:utilisateur_password' cible.pk %}" class="btn btn-light-border btn-sm"><i class="bi bi-key me-1"></i> Réinitialiser le mot de passe</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-5">
+            <section class="carte" id="bloc-modules">
+                <div class="carte-entete">
+                    <div>
+                        <h3 class="carte-titre">Accès</h3>
+                        <p class="carte-sous-titre">Rôle et modules visibles sur le hub.</p>
+                    </div>
+                </div>
+                <div class="carte-corps">
+                    <div class="mb-3">{% include "includes/_champ.html" with champ=form.role %}</div>
+                    <div class="role-aide mb-3">
+                        {% for libelle, texte in roles_aide %}<div><strong>{{ libelle }}</strong> : {{ texte }}</div>{% endfor %}
+                    </div>
+
+                    <div data-si-utilisateur>
+                        <label class="form-label">Modules autorisés</label>
+                        {% if form.modules.field.disabled %}<div class="form-text mb-2">{{ form.modules.help_text }}</div>{% endif %}
+                        <div class="choix-modules">
+                            {% for case in form.modules %}
+                            <label>{{ case.tag }} {{ case.choice_label }}</label>
+                            {% empty %}
+                            <span class="text-muted small">Aucun module disponible.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div data-si-admin hidden>
+                        <div class="alert alert-info mb-0"><i class="bi bi-info-circle-fill"></i><span>Ce rôle a accès à tous les modules.</span></div>
+                    </div>
+
+                    <hr class="my-3" style="border-color:var(--bordure-douce)">
+                    {% include "includes/_champ.html" with champ=form.is_active %}
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="{% url 'comptes:utilisateur_list' %}" class="btn btn-light-border">Annuler</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i> {% if creation %}Créer le compte{% else %}Enregistrer{% endif %}</button>
+    </div>
+</form>
+{% endblock %}

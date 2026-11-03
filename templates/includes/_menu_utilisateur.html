@@ -1,0 +1,25 @@
+{# Contenu du menu déroulant de l'avatar (hub et modules). #}
+<li class="px-2 pt-1 pb-2">
+    <div class="d-flex align-items-center gap-2">
+        {% include "includes/_avatar.html" with personne=user %}
+        <div style="min-width:0">
+            <div class="fw-bold text-truncate" style="color:var(--marine-titre)">{{ user.nom_affiche }}</div>
+            <div class="small text-muted">{{ user.get_role_display }}{% if user.poste %} · {{ user.poste }}{% endif %}</div>
+        </div>
+    </div>
+</li>
+<li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item" href="{% url 'hub' %}"><i class="bi bi-grid-3x3-gap"></i> Tous les modules</a></li>
+<li><a class="dropdown-item" href="{% url 'compte:profil' %}"><i class="bi bi-person"></i> Mon profil</a></li>
+<li><a class="dropdown-item" href="{% url 'compte:mot_de_passe' %}"><i class="bi bi-key"></i> Changer mon mot de passe</a></li>
+{% if user.est_super_admin %}
+<li><a class="dropdown-item" href="{% url 'etablissement:parametres' %}"><i class="bi bi-building-gear"></i> Paramètres de l'établissement</a></li>
+{% endif %}
+<li data-pwa-installer hidden><a class="dropdown-item fw-semibold" href="#" data-action="installer-app" style="color:var(--orange-texte)"><i class="bi bi-download"></i> Installer l'application</a></li>
+<li><hr class="dropdown-divider"></li>
+<li>
+    <form method="post" action="{% url 'compte:deconnexion' %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+    </form>
+</li>

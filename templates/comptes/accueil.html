@@ -1,0 +1,108 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+{% block page_titre %}Tableau de bord{% endblock %}
+{% block page_icone %}bi-speedometer2{% endblock %}
+
+{% block content %}
+{# ── Bloc d'accueil ── #}
+<section class="carte">
+    <div class="accueil-hero">
+        <div class="surtitre">{% now "l j F" %}{% if etablissement.ville %} · {{ etablissement.ville }}{% endif %}</div>
+        <h2>Bonjour {{ user.prenom_court }}</h2>
+        <p>Gérez les comptes de votre équipe : création, rôles, accès aux modules et sécurité des connexions.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'comptes:utilisateur_create' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> Nouvel utilisateur</a>
+            <a href="{% url 'comptes:droits' %}" class="btn btn-light-border"><i class="bi bi-grid-3x3-gap me-1"></i> Droits d'accès</a>
+        </div>
+        <div class="accueil-chiffres">
+            <div class="accueil-chiffre"><strong>{{ a_traiter|length }}</strong><span>À traiter</span></div>
+            <div class="accueil-chiffre"><strong>{{ stats.actifs }}</strong><span>Comptes actifs</span></div>
+            <div class="accueil-chiffre"><strong>{{ stats.inactifs }}</strong><span>Désactivés</span></div>
+            <div class="accueil-chiffre{% if nb_bloques %} alerte{% endif %}"><strong>{{ nb_bloques }}</strong><span>Bloqués</span></div>
+        </div>
+    </div>
+</section>
+
+{# ── À traiter ── #}
+<section class="carte mt-4">
+    <div class="carte-entete">
+        <div>
+            <h3 class="carte-titre">À traiter</h3>
+            <p class="carte-sous-titre">Ce qui demande votre attention. Rien d'autre n'y figure.</p>
+        </div>
+    </div>
+    {% for item in a_traiter %}
+    <div class="ligne-action">
+        <span class="icone-boite"><i class="bi {{ item.icone }}"></i></span>
+        <div class="flex-grow-1" style="min-width:0">
+            <div class="ligne-action-titre">{{ item.titre }}</div>
+            <div class="ligne-action-texte">{{ item.texte }}</div>
+        </div>
+        <span class="pastille d-none d-sm-inline-flex">{{ item.nombre }} concerné{{ item.nombre|pluralize }}</span>
+        <a href="{% url item.url %}{{ item.filtre|default:'' }}" class="btn btn-light-border btn-sm">{{ item.action }}</a>
+    </div>
+    {% empty %}
+    <div class="vide"><i class="bi bi-check2-circle" style="color:var(--succes)"></i><p>Tout est en ordre.</p></div>
+    {% endfor %}
+</section>
+
+<div class="row g-4 mt-0">
+    <div class="col-lg-7">
+        <div class="titre-section mt-2">
+            Derniers comptes créés
+            <a href="{% url 'comptes:utilisateur_list' %}">Tout voir</a>
+        </div>
+        <div class="carte">
+            <ul class="liste-personnes">
+                {% for u in derniers_crees %}
+                <li>
+                    {% include "includes/_avatar.html" with personne=u couleur="marine" %}
+                    <div class="flex-grow-1" style="min-width:0">
+                        <div class="nom text-truncate">{{ u.nom_affiche }}</div>
+                        <div class="detail">{{ u.poste|default:u.username }} · créé le {{ u.date_joined|date:"j M Y" }}</div>
+                    </div>
+                    <span class="pastille {% if u.est_admin %}pastille-marine{% endif %}">{{ u.get_role_display }}</span>
+                </li>
+                {% empty %}
+                <li class="vide d-block"><p>Aucun compte.</p></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="titre-section mt-2">
+            Dernières connexions
+            <a href="{% url 'comptes:journal' %}">Journal</a>
+        </div>
+        <div class="carte">
+            <ul class="liste-personnes">
+                {% for u in dernieres_connexions %}
+                <li>
+                    {% include "includes/_avatar.html" with personne=u taille="sm" %}
+                    <div class="flex-grow-1" style="min-width:0">
+                        <div class="nom text-truncate">{{ u.nom_affiche }}</div>
+                        <div class="detail">Il y a {{ u.last_login|timesince }}</div>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="vide d-block"><p>Aucune connexion pour l'instant.</p></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="titre-section">Répartition par rôle</div>
+        <div class="row g-3">
+            {% for r in repartition %}
+            <div class="col-4">
+                <a href="{% url 'comptes:utilisateur_list' %}?role={{ r.valeur }}" class="carte raccourci flex-column align-items-start gap-1">
+                    <span class="surtitre" style="font-size:.6rem">{{ r.libelle }}</span>
+                    <strong>{{ r.nombre }}</strong>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

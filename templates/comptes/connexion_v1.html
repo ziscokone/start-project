@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion{% endblock %}
+{% block body_class %}page-connexion{% endblock %}
+
+{% block body %}
+<main class="connexion">
+    <div class="connexion-carte">
+        <div class="connexion-entete">
+            {% if etablissement.logo %}
+                <img src="{{ etablissement.logo.url }}" alt="Logo" class="connexion-logo">
+            {% else %}
+                <span class="connexion-logo-initiales">{{ etablissement.initiales }}</span>
+            {% endif %}
+            <div class="connexion-nom">{{ etablissement.nom }}</div>
+            {% if etablissement.slogan %}<div class="connexion-slogan">{{ etablissement.slogan }}</div>{% endif %}
+        </div>
+
+        <div class="connexion-corps">
+            <h1>Connexion</h1>
+            <p class="text-muted small mb-3">Saisissez vos identifiants.</p>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small"><i class="bi bi-exclamation-octagon-fill"></i>
+                <span>{% for e in form.non_field_errors %}{{ e }}{% endfor %}</span>
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    {{ form.username }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.password.id_for_label }}">Mot de passe</label>
+                    <div class="position-relative">
+                        {{ form.password }}
+                        <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted"
+                                onclick="var c=document.getElementById('{{ form.password.id_for_label }}');c.type=c.type==='password'?'text':'password';this.firstElementChild.classList.toggle('bi-eye');this.firstElementChild.classList.toggle('bi-eye-slash');"
+                                aria-label="Afficher le mot de passe"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <div class="form-check mb-3">
+                    {{ form.se_souvenir }}
+                    <label class="form-check-label small" for="{{ form.se_souvenir.id_for_label }}">{{ form.se_souvenir.label }}</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <p class="connexion-pied">
+        Mot de passe oublié ? Contactez votre administrateur.<br>
+        © {% now "Y" %} {{ etablissement.nom }}
+    </p>
+</main>
+{% endblock %}

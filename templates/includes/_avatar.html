@@ -1,0 +1,4 @@
+{# Usage : {% include "includes/_avatar.html" with personne=user taille="sm" %} #}
+<span class="avatar{% if taille %} avatar-{{ taille }}{% endif %}{% if couleur %} avatar-{{ couleur }}{% endif %}">
+    {% if personne.photo %}<img src="{{ personne.photo.url }}" alt="">{% else %}{{ personne.initiales }}{% endif %}
+</span>

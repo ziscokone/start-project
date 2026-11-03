@@ -1,0 +1,10 @@
+Django>=5.2,<6.0
+python-dotenv>=1.0
+Pillow>=10.0
+
+# Sécurité : blocage après plusieurs échecs de connexion
+django-axes>=8.0
+
+# Production (décommenter au déploiement)
+# psycopg2-binary>=2.9
+# gunicorn>=23.0

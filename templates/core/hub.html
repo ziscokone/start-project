@@ -1,0 +1,26 @@
+{% extends "layouts/page.html" %}
+
+{% block title %}Accueil{% endblock %}
+{% block body_class %}page-hub hub-marine{% endblock %}
+
+{% block decor %}<div class="deco" aria-hidden="true">{% include "includes/_decor.html" %}</div>{% endblock %}
+
+{% block main %}
+<main class="hub-main">
+    <div class="w-100" style="max-width:900px">{% include "includes/_messages.html" %}</div>
+
+    <div class="grille-modules">
+        {% for module in modules_accessibles %}
+        <a href="{% url module.url_name %}" class="tuile-module">
+            <div class="tuile-module-icone tuile-{{ module.couleur }}"><i class="bi {{ module.icone }}"></i></div>
+            <div class="tuile-module-nom">{{ module.nom }}</div>
+        </a>
+        {% empty %}
+        <div class="carte vide" style="max-width:420px">
+            <i class="bi bi-lock"></i>
+            <p>Aucun module ne vous a été attribué.<br>Contactez votre administrateur.</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

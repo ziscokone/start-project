@@ -1,0 +1,114 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}Utilisateurs{% endblock %}
+{% block page_titre %}Tous les utilisateurs{% endblock %}
+{% block page_icone %}bi-people{% endblock %}
+
+{% block content %}
+<section class="carte">
+    <div class="carte-entete flex-wrap">
+        <div>
+            <h3 class="carte-titre">Utilisateurs</h3>
+            <p class="carte-sous-titre" data-filtre-zone="compteur">{{ page.paginator.count }} compte{{ page.paginator.count|pluralize }}{% if filtre_actif %} trouvé{{ page.paginator.count|pluralize }}{% endif %}</p>
+        </div>
+        <a href="{% url 'comptes:utilisateur_create' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> Nouvel utilisateur</a>
+    </div>
+
+    <form method="get" data-filtre-auto class="barre-filtres px-4 py-3 border-bottom" style="border-color:var(--bordure-douce)!important">
+        <div class="champ-icone champ-recherche"><i class="bi bi-search"></i><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Nom, identifiant, email, téléphone…" autocomplete="off"></div>
+        <select name="role" class="form-select">
+            <option value="">Tous les rôles</option>
+            {% for valeur, libelle in roles %}<option value="{{ valeur }}"{% if role == valeur %} selected{% endif %}>{{ libelle }}</option>{% endfor %}
+        </select>
+        <select name="statut" class="form-select">
+            <option value="">Tous les statuts</option>
+            <option value="actif"{% if statut == 'actif' %} selected{% endif %}>Actifs</option>
+            <option value="inactif"{% if statut == 'inactif' %} selected{% endif %}>Désactivés</option>
+            <option value="jamais"{% if statut == 'jamais' %} selected{% endif %}>Jamais connectés</option>
+        </select>
+        <span data-filtre-zone="effacer">{% if filtre_actif %}<a href="{% url 'comptes:utilisateur_list' %}" class="btn btn-link text-muted"><i class="bi bi-x-circle me-1"></i>Effacer</a>{% endif %}</span>
+    </form>
+
+    <div class="table-responsive" data-filtre-zone="resultats">
+        <table class="table tableau">
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th class="d-none d-lg-table-cell">Contact</th>
+                    <th class="d-none d-sm-table-cell">Rôle</th>
+                    <th class="d-none d-xl-table-cell">Modules</th>
+                    <th>Statut</th>
+                    <th class="d-none d-md-table-cell">Dernière connexion</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for u in page %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% include "includes/_avatar.html" with personne=u couleur="marine" %}
+                            <div style="min-width:0">
+                                <div class="fw-bold" style="color:var(--marine-titre)">{{ u.nom_affiche }}{% if u.pk == user.pk %} <span class="pastille pastille-orange ms-1">Vous</span>{% endif %}</div>
+                                <div class="texte-secondaire">{{ u.username }}{% if u.poste %} · {{ u.poste }}{% endif %}<span class="d-sm-none"> · {{ u.get_role_display }}</span></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        <div>{{ u.email|default:"—" }}</div>
+                        <div class="texte-secondaire">{{ u.telephone }}</div>
+                    </td>
+                    <td class="d-none d-sm-table-cell"><span class="pastille {% if u.est_super_admin %}pastille-orange{% elif u.est_admin %}pastille-marine{% endif %}">{{ u.get_role_display }}</span></td>
+                    <td class="d-none d-xl-table-cell">
+                        {% if u.est_admin %}
+                            <span class="texte-secondaire">Tous les modules</span>
+                        {% else %}
+                            {% for m in u.modules_autorises.all %}<span class="puce-module">{{ m.nom }}</span>{% empty %}<span class="texte-secondaire">Aucun</span>{% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_active %}<span class="pastille pastille-succes pastille-point">Actif</span>
+                        {% else %}<span class="pastille pastille-danger pastille-point">Désactivé</span>{% endif %}
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        {% if u.last_login %}{{ u.last_login|date:"d/m/Y H:i" }}
+                        {% else %}<span class="texte-secondaire">Jamais</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if user.rang >= u.rang %}
+                        <div class="dropdown">
+                            <button class="btn btn-light-border btn-icone" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-label="Actions"><i class="bi bi-three-dots"></i></button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'comptes:utilisateur_update' u.pk %}"><i class="bi bi-pencil"></i> Modifier</a></li>
+                                <li><a class="dropdown-item" href="{% url 'comptes:utilisateur_password' u.pk %}"><i class="bi bi-key"></i> {% if u.pk == user.pk %}Changer mon mot de passe{% else %}Réinitialiser le mot de passe{% endif %}</a></li>
+                                {% if u.pk != user.pk %}
+                                <li>
+                                    <form method="post" action="{% url 'comptes:utilisateur_toggle' u.pk %}" class="m-0"
+                                          data-confirmer="{% if u.is_active %}Désactiver le compte de {{ u.nom_affiche }} ?{% else %}Réactiver le compte de {{ u.nom_affiche }} ?{% endif %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="suivant" value="{{ request.get_full_path }}">
+                                        <button class="dropdown-item">{% if u.is_active %}<i class="bi bi-pause-circle"></i> Désactiver{% else %}<i class="bi bi-play-circle"></i> Réactiver{% endif %}</button>
+                                    </form>
+                                </li>
+                                {% if user.est_admin %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'comptes:utilisateur_delete' u.pk %}"><i class="bi bi-trash"></i> Supprimer</a></li>
+                                {% endif %}
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7"><div class="vide"><i class="bi bi-search"></i><p>Aucun utilisateur ne correspond à votre recherche.</p></div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div data-filtre-zone="pagination">
+        {% if page.paginator.num_pages > 1 %}<div class="carte-pied">{% include "includes/_pagination.html" %}</div>{% endif %}
+    </div>
+</section>
+{% endblock %}

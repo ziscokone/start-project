@@ -1,0 +1,70 @@
+{% extends "layouts/module.html" %}
+
+{% block title %}Droits d'accès{% endblock %}
+{% block page_titre %}Droits d'accès{% endblock %}
+{% block page_icone %}bi-grid-3x3-gap{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <section class="carte">
+        <div class="carte-entete flex-wrap">
+            <div>
+                <h3 class="carte-titre">Modules par utilisateur</h3>
+                <p class="carte-sous-titre">Cochez les modules que chaque utilisateur voit sur le hub.</p>
+            </div>
+            <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i> Enregistrer</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table tableau grille-droits">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        {% for m in modules %}<th class="module">{{ m.nom }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for ligne in lignes %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% include "includes/_avatar.html" with personne=ligne.user taille="sm" couleur="marine" %}
+                                <div>
+                                    <div class="fw-bold" style="color:var(--marine-titre)">{{ ligne.user.nom_affiche }}</div>
+                                    <div class="texte-secondaire">{{ ligne.user.poste|default:ligne.user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        {% for module, coche in ligne.cases %}
+                        <td class="case"><input type="checkbox" class="form-check-input" name="u{{ ligne.user.pk }}" value="{{ module.pk }}"{% if coche %} checked{% endif %} aria-label="{{ module.nom }} pour {{ ligne.user.nom_affiche }}"></td>
+                        {% endfor %}
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="{{ modules|length|add:1 }}"><div class="vide"><i class="bi bi-people"></i><p>Aucun compte de rôle « Utilisateur » à configurer.</p></div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</form>
+
+{% if admins %}
+<section class="carte mt-4">
+    <div class="carte-entete">
+        <div>
+            <h3 class="carte-titre">Accès complet</h3>
+            <p class="carte-sous-titre">Super Admins et Administrateurs : tous les modules, sans réglage.</p>
+        </div>
+    </div>
+    <ul class="liste-personnes">
+        {% for a in admins %}
+        <li>
+            {% include "includes/_avatar.html" with personne=a taille="sm" %}
+            <div class="flex-grow-1"><div class="nom">{{ a.nom_affiche }}</div></div>
+            <span class="pastille {% if a.est_super_admin %}pastille-orange{% else %}pastille-marine{% endif %}">{{ a.get_role_display }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}

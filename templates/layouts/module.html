@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% comment %}
+    Gabarit des pages d'un module : menu vertical à gauche + barre du haut.
+    Le menu est construit depuis le fichier module.py du module (voir core/modules.py).
+
+    Blocs à remplir dans une page :
+      page_titre   titre affiché dans la barre du haut (obligatoire)
+      page_icone   icône Bootstrap de la page (par défaut : celle du module)
+      content      contenu de la page
+{% endcomment %}
+
+{% block body_class %}page-module{% endblock %}
+
+{% block body %}
+<aside class="sidebar" id="sidebar" aria-label="Menu du module">
+    <div class="sidebar-entete">
+        <a href="{% url module_actif.url_name %}" class="sidebar-marque" title="{{ module_actif.nom }}">
+            <span class="sidebar-marque-icone tuile-{{ module_actif.couleur }}"><i class="bi {{ module_actif.icone }}"></i></span>
+            <span class="sidebar-marque-nom">{{ module_actif.nom }}</span>
+        </a>
+        <button type="button" class="sidebar-replier" data-action="replier-sidebar" title="Réduire / agrandir le menu">
+            <i class="bi bi-chevron-double-left"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        {% for section in menu_module %}
+            <div class="sidebar-section">{{ section.titre }}</div>
+            {% for lien in section.liens %}
+                {% if lien.url %}
+                <a href="{{ lien.url }}" class="sidebar-lien{% if lien.actif %} actif{% endif %}" title="{{ lien.titre }}"{% if lien.actif %} aria-current="page"{% endif %}>
+                    <span class="sidebar-icone"><i class="bi {{ lien.icone }}"></i></span>
+                    <span class="sidebar-texte">{{ lien.titre }}</span>
+                    {% if lien.badge %}<span class="sidebar-badge">{{ lien.badge }}</span>{% endif %}
+                </a>
+                {% else %}
+                <span class="sidebar-lien desactive" title="{{ lien.titre }} (bientôt)">
+                    <span class="sidebar-icone"><i class="bi {{ lien.icone }}"></i></span>
+                    <span class="sidebar-texte">{{ lien.titre }}</span>
+                    <span class="sidebar-badge bientot">bientôt</span>
+                </span>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </nav>
+
+</aside>
+<div class="sidebar-voile" data-action="fermer-sidebar"></div>
+
+<div class="app-principal">
+    <header class="app-topbar">
+        <button type="button" class="topbar-mobile" data-action="ouvrir-sidebar" aria-label="Ouvrir le menu">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="topbar-titre">
+            <span class="topbar-titre-icone"><i class="bi {% block page_icone %}{{ module_actif.icone }}{% endblock %}"></i></span>
+            <div style="min-width:0">
+                <div class="topbar-surtitre">{{ module_actif.nom }}</div>
+                <h1 class="topbar-h1">{% block page_titre %}{% endblock %}</h1>
+            </div>
+        </div>
+
+        <div class="topbar-droite">
+            {% if module_actif.recherche_url %}
+            <form class="topbar-recherche" action="{% url module_actif.recherche_url %}" method="get" role="search">
+                <i class="bi bi-search"></i>
+                <input type="search" name="q" placeholder="Rechercher…" value="{{ request.GET.q }}" aria-label="Rechercher">
+            </form>
+            <span class="topbar-separateur"></span>
+            {% endif %}
+
+            {# Retour au Hub (liste de tous les modules) #}
+            <a href="{% url 'hub' %}" class="topbar-bouton" title="Tous les modules">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+            </a>
+
+            {# Notifications #}
+            <div class="dropdown">
+                <button type="button" class="topbar-bouton" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                    <i class="bi bi-bell"></i>
+                    {% if notifications %}<span class="compteur">{{ notifications|length }}</span>{% endif %}
+                </button>
+                <div class="dropdown-menu dropdown-menu-end notifications-menu">
+                    <div class="dropdown-header px-2 pb-1">Notifications</div>
+                    {% for n in notifications %}
+                    <a href="{{ n.url }}" class="notification">
+                        <span class="icone-boite icone-boite-{{ n.niveau|default:'marine' }}" style="width:34px;height:34px;font-size:.95rem"><i class="bi {{ n.icone }}"></i></span>
+                        <span>{{ n.texte }}</span>
+                    </a>
+                    {% empty %}
+                    <div class="vide py-4"><i class="bi bi-bell-slash"></i><p>Aucune notification</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <span class="topbar-separateur"></span>
+
+            <div class="dropdown">
+                <button type="button" class="topbar-utilisateur" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% include "includes/_avatar.html" with personne=user taille="sm" %}
+                    <span class="topbar-utilisateur-nom text-uppercase">{{ user.nom_affiche }}</span>
+                    <i class="bi bi-chevron-down small text-muted"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" style="min-width:260px">
+                    {% include "includes/_menu_utilisateur.html" %}
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-contenu">
+        {% include "includes/_messages.html" %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

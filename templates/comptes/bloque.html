@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Compte bloqué{% endblock %}
+{% block body_class %}page-hub{% endblock %}
+
+{% block body %}
+<div class="page-erreur" style="min-height:100vh">
+    <div class="carte carte-corps px-5 py-5" style="max-width:480px">
+        <span class="icone-boite icone-boite-danger"><i class="bi bi-shield-lock"></i></span>
+        <h2 class="h4 fw-bold">Connexion temporairement bloquée</h2>
+        <p class="text-muted mb-4">
+            Trop de tentatives incorrectes. Réessayez dans une heure,
+            ou demandez à un administrateur de débloquer votre compte.
+        </p>
+        <a href="{% url 'compte:connexion' %}" class="btn btn-light-border">Retour à la connexion</a>
+    </div>
+</div>
+{% endblock %}

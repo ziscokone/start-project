@@ -1,0 +1,22 @@
+{% if page.paginator.num_pages > 1 %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="small text-muted">{{ page.start_index }}–{{ page.end_index }} sur {{ page.paginator.count }}</span>
+    <ul class="pagination">
+        {% if page.has_previous %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=page.previous_page_number %}"><i class="bi bi-chevron-left"></i></a></li>
+        {% endif %}
+        {% for n in page.paginator.get_elided_page_range %}
+            {% if n == page.number %}
+            <li class="page-item active"><span class="page-link">{{ n }}</span></li>
+            {% elif n == page.paginator.ELLIPSIS %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="{% querystring page=n %}">{{ n }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page.has_next %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=page.next_page_number %}"><i class="bi bi-chevron-right"></i></a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
